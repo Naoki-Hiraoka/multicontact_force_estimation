@@ -1,0 +1,13 @@
+- git:
+    local-name: Naoki-Hiraoka/qp_solvers
+    uri: git@github.com:Naoki-Hiraoka/qp_solvers.git
+- git:
+    local-name: Naoki-Hiraoka/prioritized_qp
+    uri: git@github.com:Naoki-Hiraoka/prioritized_qp.git
+- git:
+    local-name: Naoki-Hiraoka/multicontact_force_estimation
+    uri: git@github.com:Naoki-Hiraoka/multicontact_force_estimation.git
+- git:
+    local-name: choreonoid
+    uri: git@github.com:choreonoid/choreonoid.git
+    version: release-1.7

@@ -50,6 +50,15 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>choreonoid</depend>
+  <depend>prioritized_qp</depend>
+  <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>eigen_conversions</depend>
+  <depend>multicontact_force_estimator_msgs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

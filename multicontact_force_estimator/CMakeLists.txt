@@ -11,9 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   eigen_conversions
-  choreonoid_cpp
   prioritized_qp
   multicontact_force_estimator_msgs)
+
+find_package(choreonoid REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -25,10 +26,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES multicontact_force_estimator
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  #  LIBRARIES multicontact_force_estimator
+  #  CATKIN_DEPENDS other_catkin_pkg
+  DEPENDS choreonoid
 )
 
 ###########
@@ -38,14 +39,27 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
-)
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${CHOREONOID_INCLUDE_DIRS}
+  )
+
+# 相対パスを絶対パスに直す
+set(CHOREONOID_LIBRARIES_ABS)
+foreach(lib ${CHOREONOID_LIBRARIES})
+  find_library(${lib}_abs NAMES ${lib} PATHS ${CHOREONOID_LIBRARY_DIRS})
+  set(CHOREONOID_LIBRARIES_ABS ${CHOREONOID_LIBRARIES_ABS} ${${lib}_abs})
+endforeach(lib)
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/multicontact_force_estimator.cpp
-# )
+add_library(${PROJECT_NAME}
+  src/ForceSensorJointModel.cpp
+  )
+
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${CHOREONOID_LIBRARIES_ABS}
+  )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
