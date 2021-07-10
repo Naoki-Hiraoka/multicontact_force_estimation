@@ -57,9 +57,9 @@ if __name__ == '__main__':
     rknee.pose.pose.position.y = 0
     rknee.pose.pose.position.z = 0
     rknee.pose.pose.orientation.x = 0
-    rknee.pose.pose.orientation.y = -1
+    rknee.pose.pose.orientation.y = -0.707107
     rknee.pose.pose.orientation.z = 0
-    rknee.pose.pose.orientation.w = 0
+    rknee.pose.pose.orientation.w = 0.707107
 
     lknee = ContactPoint()
     lknee.header.frame_id = "lknee"
@@ -69,9 +69,9 @@ if __name__ == '__main__':
     lknee.pose.pose.position.y = 0
     lknee.pose.pose.position.z = 0
     lknee.pose.pose.orientation.x = 0
-    lknee.pose.pose.orientation.y = -1
+    lknee.pose.pose.orientation.y = -0.707107
     lknee.pose.pose.orientation.z = 0
-    lknee.pose.pose.orientation.w = 0
+    lknee.pose.pose.orientation.w = 0.707107
 
     pub.publish([rleg,lleg,rarm,larm,rknee,lknee])
     rospy.spin()

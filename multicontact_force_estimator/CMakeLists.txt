@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   eigen_conversions
   dynamic_reconfigure
+  visualization_msgs
   prioritized_qp
   multicontact_force_estimator_msgs)
 

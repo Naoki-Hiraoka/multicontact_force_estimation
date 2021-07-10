@@ -1,11 +1,37 @@
 <launch>
+  <node pkg="firstorder_lowpass_filter" type="jointstates_filter" name="joint_states_filter">
+    <remap from="~input" to="/joint_states"/>
+    <rosparam>
+      rate: 250
+      position_cutoff_freq: 1.0
+      velocity_cutoff_freq: 1.0
+      effort_cutoff_freq: 1.0
+    </rosparam>
+  </node>
+  <node pkg="firstorder_lowpass_filter" type="wrenchstamped_filter" name="rfsensor_filter">
+    <remap from="~input" to="/rfsensor"/>
+    <param name="cutoff_freq" value="1.0"/>
+  </node>
+  <node pkg="firstorder_lowpass_filter" type="wrenchstamped_filter" name="lfsensor_filter">
+    <remap from="~input" to="/lfsensor"/>
+    <param name="cutoff_freq" value="1.0"/>
+  </node>
+  <node pkg="firstorder_lowpass_filter" type="wrenchstamped_filter" name="rhsensor_filter">
+    <remap from="~input" to="/rhsensor"/>
+    <param name="cutoff_freq" value="1.0"/>
+  </node>
+  <node pkg="firstorder_lowpass_filter" type="wrenchstamped_filter" name="lhsensor_filter">
+    <remap from="~input" to="/lhsensor"/>
+    <param name="cutoff_freq" value="1.0"/>
+  </node>
+
   <node pkg="multicontact_force_estimator" type="multicontact_force_estimator_node" name="multicontact_force_estimator_node">
-    <remap from="joint_states" to="/joint_states"/>
+    <remap from="joint_states" to="/joint_states_filter/output"/>
     <remap from="imu" to="/imu"/>
-    <remap from="rfsensor" to="/rfsensor"/>
-    <remap from="lfsensor" to="/lfsensor"/>
-    <remap from="rhsensor" to="/rhsensor"/>
-    <remap from="lhsensor" to="/lhsensor"/>
+    <remap from="rfsensor" to="/rfsensor_filter/output"/>
+    <remap from="lfsensor" to="/lfsensor_filter/output"/>
+    <remap from="rhsensor" to="/rhsensor_filter/output"/>
+    <remap from="lhsensor" to="/lhsensor_filter/output"/>
     <remap from="~contact_points" to="/sample_contact_point_publisher/output"/>
     <rosparam>
       rate: 50
@@ -17,4 +43,6 @@
   </node>
 
   <node pkg="multicontact_force_estimator" type="sample_contact_point_publisher.py" name="sample_contact_point_publisher"/>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find multicontact_force_estimator)/sample/sample.rviz"/>
 </launch>

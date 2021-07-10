@@ -9,6 +9,7 @@
 #include <geometry_msgs/WrenchStamped.h>
 #include <std_msgs/Float64.h>
 #include <eigen_conversions/eigen_msg.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <dynamic_reconfigure/server.h>
 
 #include <cnoid/Body>
@@ -99,6 +100,7 @@ namespace multicontact_force_estimator {
         pnh.param("offset_update_rate", config_.offset_update_rate, 1.0); // 1 hz
         pnh.param("force_offset_update_thre", config_.force_offset_update_thre, 0.5); //0.5[N]
         pnh.param("moment_offset_update_thre", config_.moment_offset_update_thre, 0.1); //0.1 [Nm]
+        pnh.param("marker_scale", config_.marker_scale, 0.01); // 0.01[m/N]
         cfgServer_.setConfigDefault(config_);
         cfgServer_.updateConfig(config_);
         cfgServer_.setCallback([&](multicontact_force_estimator_msgs::MultiContactForceEstimatorConfig& config, int32_t level){config_ = config; });//setCallbackの中でcallbackが呼ばれるので、その前にupdateConfigを呼ぶ必要がある
@@ -113,6 +115,7 @@ namespace multicontact_force_estimator {
       }
       rootMassOffsetPub_ = pnh.advertise<std_msgs::Float64>("root_mass_offset", 1000);
       estimatedForcePub_ = pnh.advertise<multicontact_force_estimator_msgs::WrenchStampedArray>("estimated_force", 1000);
+      estimatedForceMarkerPub_ = pnh.advertise<visualization_msgs::MarkerArray>("estimated_force_marker", 1000);
 
       // setup variables
       originalRootMass_ = robot_->rootLink()->m();
@@ -427,6 +430,36 @@ namespace multicontact_force_estimator {
         }
         estimatedForcePub_.publish(msg);
       }
+      if (contactPointMsg_){
+        if(estimatedForceMarkerMsg_.markers.size() < contactPointMsg_->contactpoints.size()) estimatedForceMarkerMsg_.markers.resize(contactPointMsg_->contactpoints.size());
+        for(size_t i=0; i<contactPointMsg_->contactpoints.size();i++){
+          estimatedForceMarkerMsg_.markers[i].header.seq = seq_;
+          estimatedForceMarkerMsg_.markers[i].header.stamp = event.current_real;
+          estimatedForceMarkerMsg_.markers[i].header.frame_id = contactPointMsg_->contactpoints[i].pose.header.frame_id;
+          estimatedForceMarkerMsg_.markers[i].id = i;
+          estimatedForceMarkerMsg_.markers[i].type = visualization_msgs::Marker::ARROW;
+          estimatedForceMarkerMsg_.markers[i].action = visualization_msgs::Marker::ADD;
+          estimatedForceMarkerMsg_.markers[i].pose.orientation.w = 1;
+          estimatedForceMarkerMsg_.markers[i].scale.x = 0.01;
+          estimatedForceMarkerMsg_.markers[i].scale.y = 0.02;
+          estimatedForceMarkerMsg_.markers[i].color.r = 1.0;
+          estimatedForceMarkerMsg_.markers[i].color.a = 1.0;
+          estimatedForceMarkerMsg_.markers[i].points.resize(2);
+          estimatedForceMarkerMsg_.markers[i].points[0] = contactPointMsg_->contactpoints[i].pose.pose.position;
+          estimatedForceMarkerMsg_.markers[i].points[1] = contactPointMsg_->contactpoints[i].pose.pose.position;
+          Eigen::Quaterniond localR;
+          tf::quaternionMsgToEigen(contactPointMsg_->contactpoints[i].pose.pose.orientation,localR);
+          cnoid::Vector3 localf = localR * estimatedForce[i].head<3>();
+          estimatedForceMarkerMsg_.markers[i].points[1].x += localf[0] * config_.marker_scale;
+          estimatedForceMarkerMsg_.markers[i].points[1].y += localf[1] * config_.marker_scale;
+          estimatedForceMarkerMsg_.markers[i].points[1].z += localf[2] * config_.marker_scale;
+        }
+        for(size_t i=contactPointMsg_->contactpoints.size();i<estimatedForceMarkerMsg_.markers.size(); i++){
+          estimatedForceMarkerMsg_.markers[i].id = i;
+          estimatedForceMarkerMsg_.markers[i].action = visualization_msgs::Marker::DELETE;
+        }
+        estimatedForceMarkerPub_.publish(estimatedForceMarkerMsg_);
+      }
       {
         for(size_t i=0;i<forceSensors.size();i++){
           geometry_msgs::WrenchStamped msg;
@@ -465,6 +498,8 @@ namespace multicontact_force_estimator {
     std::map<std::string,ros::Publisher> offsetForcePub_;
     ros::Publisher rootMassOffsetPub_;
     ros::Publisher estimatedForcePub_;
+    ros::Publisher estimatedForceMarkerPub_;
+    visualization_msgs::MarkerArray estimatedForceMarkerMsg_;
 
     multicontact_force_estimator_msgs::MultiContactForceEstimatorConfig config_;
     cnoid::BodyPtr robot_;
