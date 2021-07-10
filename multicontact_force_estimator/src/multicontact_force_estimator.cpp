@@ -168,7 +168,7 @@ namespace multicontact_force_estimator {
       seq_++;
 
       const cnoid::DeviceList<cnoid::ForceSensor> forceSensors(robot_->devices());
-      std::cerr << "hoge" << std::endl;
+
       // センサ値を反映
       if (jointStateMsg_) {
         for(size_t i=0;i<jointStateMsg_->name.size();i++){
@@ -216,7 +216,7 @@ namespace multicontact_force_estimator {
         }
       }
       robot_->calcForwardKinematics(false,false);//static
-      std::cerr << "hoge1" << std::endl;
+
       // estimate
       std::vector<cnoid::Vector6> estimatedForce;
       if (contactPointMsg_){
@@ -236,7 +236,7 @@ namespace multicontact_force_estimator {
             break;
           }
         }
-      std::cerr << "hoge1.1" << std::endl;
+
         /*
           g = sensors + J^f
           f: estimated force
@@ -294,11 +294,12 @@ namespace multicontact_force_estimator {
           }
         }
         Eigen::SparseMatrix<double,Eigen::RowMajor> Jt = J.transpose();
-      std::cerr << "hoge1.2" << std::endl;
+
         /*
           solve QP
          */
         cnoid::VectorX result = cnoid::VectorX::Zero(totalEstimatedForceDim);
+        // 接触力制約は与えないほうが良い. 現実の力が制約を侵していた場合、制約の範囲内で運動方程式を無理に満たそうとして、制約の範囲内で大きく変動するような挙動を示す
         {
           // 力センサの値
           qpForceSensorTask_->solver().settings()->setVerbosity(config_.debug_print);
@@ -321,7 +322,7 @@ namespace multicontact_force_estimator {
             for(size_t j=0;j<3;j++) qpForceSensorTask_->wa()(i*6+3+j) = 1;
           }
 
-          for(size_t i=0;i<totalEstimatedForceDim;i++) qpForceSensorTask_->w()(i) = 1e-10;
+          for(size_t i=0;i<totalEstimatedForceDim;i++) qpForceSensorTask_->w()(i) = 1e-6;
         }
         {
           // rootのつりあい
@@ -341,7 +342,7 @@ namespace multicontact_force_estimator {
           for(size_t j=0;j<3;j++) qpRootTask_->wa()(j) = 1;
           for(size_t j=0;j<3;j++) qpRootTask_->wa()(3+j) = 1;
 
-          for(size_t i=0;i<totalEstimatedForceDim;i++) qpRootTask_->w()(i) = 1e-10;
+          for(size_t i=0;i<totalEstimatedForceDim;i++) qpRootTask_->w()(i) = 1e-6;
         }
         {
           // 関節トルクの値
@@ -363,18 +364,18 @@ namespace multicontact_force_estimator {
             qpJointTask_->wa()(i) = 1;
           }
 
-          for(size_t i=0;i<totalEstimatedForceDim;i++) qpJointTask_->w()(i) = 1e-10;
+          for(size_t i=0;i<totalEstimatedForceDim;i++) qpJointTask_->w()(i) = 1e-6;
         }
         {
           // solve
           std::vector<std::shared_ptr<prioritized_qp::Task> > tasks{qpForceSensorTask_,qpRootTask_, qpJointTask_};
-          bool solved = prioritized_qp::solve(tasks,result);
+          bool solved = prioritized_qp::solve(tasks,result,config_.debug_print);
           if(!solved){
             ROS_ERROR_STREAM("QP failed");
             return;
           }
         }
-      std::cerr << "hoge1.3" << std::endl;
+
         /*
           結果の反映
          */
@@ -416,7 +417,7 @@ namespace multicontact_force_estimator {
           }
         }
       }
-      std::cerr << "hoge2" << std::endl;
+
       // publish
       if (contactPointMsg_){
         multicontact_force_estimator_msgs::WrenchStampedArray msg;
