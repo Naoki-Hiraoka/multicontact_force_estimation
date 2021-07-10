@@ -3,6 +3,7 @@ project(multicontact_force_estimator_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation
+  dynamic_reconfigure
   std_msgs
   geometry_msgs)
 
@@ -53,30 +54,16 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+  )
 
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
+generate_dynamic_reconfigure_options(
+  cfg/MultiContactForceEstimator.cfg
+)
 
-## To declare and build dynamic reconfigure parameters within this
-## package, follow these steps:
-## * In the file package.xml:
-##   * add a build_depend and a exec_depend tag for "dynamic_reconfigure"
-## * In this file (CMakeLists.txt):
-##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * uncomment the "generate_dynamic_reconfigure_options" section below
-##     and list every .cfg file to be processed
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
 
 catkin_package(
 )

@@ -11,10 +11,12 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   eigen_conversions
+  dynamic_reconfigure
   prioritized_qp
   multicontact_force_estimator_msgs)
 
 find_package(choreonoid REQUIRED)
+find_package(OsqpEigen REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -29,7 +31,7 @@ catkin_package(
   INCLUDE_DIRS include
   #  LIBRARIES multicontact_force_estimator
   #  CATKIN_DEPENDS other_catkin_pkg
-  DEPENDS choreonoid
+  DEPENDS CHOREONOID
 )
 
 ###########
@@ -45,20 +47,28 @@ include_directories(
   )
 
 # 相対パスを絶対パスに直す
-set(CHOREONOID_LIBRARIES_ABS)
-foreach(lib ${CHOREONOID_LIBRARIES})
+set(CHOREONOID_BODY_LIBRARIES_ABS)
+foreach(lib ${CHOREONOID_BODY_LIBRARIES})
   find_library(${lib}_abs NAMES ${lib} PATHS ${CHOREONOID_LIBRARY_DIRS})
-  set(CHOREONOID_LIBRARIES_ABS ${CHOREONOID_LIBRARIES_ABS} ${${lib}_abs})
+  set(CHOREONOID_BODY_LIBRARIES_ABS ${CHOREONOID_BODY_LIBRARIES_ABS} ${${lib}_abs})
 endforeach(lib)
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/ForceSensorJointModel.cpp
+  src/Jacobian.cpp
   )
-
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  ${CHOREONOID_LIBRARIES_ABS}
+  ${CHOREONOID_BODY_LIBRARIES_ABS}
+  )
+
+add_executable(multicontact_force_estimator_node src/multicontact_force_estimator.cpp)
+target_link_libraries(multicontact_force_estimator_node
+  ${catkin_LIBRARIES}
+  ${CHOREONOID_BODY_LIBRARIES_ABS}
+  ${PROJECT_NAME}
+  OsqpEigen::OsqpEigen
   )
 
 ## Add cmake target dependencies of the library
@@ -100,26 +110,21 @@ target_link_libraries(${PROJECT_NAME}
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
-## Mark executables for installation
-## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-# install(TARGETS ${PROJECT_NAME}_node
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS ${PROJECT_NAME}_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
-## Mark libraries for installation
-## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-# install(TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
 
-## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

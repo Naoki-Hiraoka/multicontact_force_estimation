@@ -1,0 +1,20 @@
+<launch>
+  <node pkg="multicontact_force_estimator" type="multicontact_force_estimator_node" name="multicontact_force_estimator_node">
+    <remap from="joint_states" to="/joint_states"/>
+    <remap from="imu" to="/imu"/>
+    <remap from="rfsensor" to="/rfsensor"/>
+    <remap from="lfsensor" to="/lfsensor"/>
+    <remap from="rhsensor" to="/rhsensor"/>
+    <remap from="lhsensor" to="/lhsensor"/>
+    <remap from="~contact_points" to="/sample_contact_point_publisher/output"/>
+    <rosparam>
+      rate: 50
+      robotmodel: "package://jvrc_models/JAXON_JVRC/JAXON_JVRCmain.wrl"
+      offset_update_rate: 1.0
+      force_offset_update_thre: 0.5
+      moment_offset_update_thre: 0.1
+    </rosparam>
+  </node>
+
+  <node pkg="multicontact_force_estimator" type="sample_contact_point_publisher.py" name="sample_contact_point_publisher"/>
+</launch>

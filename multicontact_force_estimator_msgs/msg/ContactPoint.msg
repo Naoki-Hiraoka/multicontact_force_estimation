@@ -1,4 +1,4 @@
-int32 6D=0
+int32 SIXAXIS=0
 int32 POINT=1
 
 Header header # header for time/frame information

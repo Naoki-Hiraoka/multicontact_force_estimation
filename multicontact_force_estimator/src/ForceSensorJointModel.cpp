@@ -1,4 +1,4 @@
-#include "multicontact_force_estimator/ForceSensorJointModel.h"
+#include <multicontact_force_estimator/ForceSensorJointModel.h>
 
 #include <cnoid/ForceSensor>
 #include <cnoid/SceneGraph>
