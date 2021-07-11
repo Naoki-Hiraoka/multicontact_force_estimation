@@ -1,3 +1,0 @@
-#! /bin/bash
-
-choreonoid `rospack find multicontact_controller`/src/ContactForceEstimator/ContactForceEstimator.cnoid "$@"
