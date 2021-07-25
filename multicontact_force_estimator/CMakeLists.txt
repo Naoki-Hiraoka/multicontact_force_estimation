@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(multicontact_force_estimator)
 
 add_compile_options(-std=c++11)
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
