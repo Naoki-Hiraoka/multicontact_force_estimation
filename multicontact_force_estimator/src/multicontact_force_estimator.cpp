@@ -368,8 +368,8 @@ namespace multicontact_force_estimator {
         }
         {
           // solve
-          std::vector<std::shared_ptr<prioritized_qp::Task> > tasks{qpForceSensorTask_,qpRootTask_, qpJointTask_};
-          bool solved = prioritized_qp::solve(tasks,result,config_.debug_print);
+          std::vector<std::shared_ptr<prioritized_qp_base::Task> > tasks{qpForceSensorTask_,qpRootTask_, qpJointTask_};
+          bool solved = prioritized_qp_base::solve(tasks,result,config_.debug_print);
           if(!solved){
             ROS_ERROR_STREAM("QP failed");
             return;
